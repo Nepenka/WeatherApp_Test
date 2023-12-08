@@ -15,7 +15,8 @@ class ViewController: UIViewController, UISearchResultsUpdating {
     var collectionView: UICollectionView!
     var timer = Timer()
     var offerModel: OfferModel?
-    
+    var tableView: UITableView = .init()
+    var weatherOfferModel: WeatherOfferModel?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -25,7 +26,7 @@ class ViewController: UIViewController, UISearchResultsUpdating {
         UIApplication.shared.windows.first?.makeKeyAndVisible()
         setupNavigationBar()
         setupCollectionView()
-
+        setupTableView()
         
     }
     
@@ -49,6 +50,23 @@ class ViewController: UIViewController, UISearchResultsUpdating {
             make.top.equalToSuperview().inset(350)
             make.height.equalTo(150)
         }
+    }
+    
+//MARK - UITableView
+    
+    func setupTableView() {
+        view.addSubview(tableView)
+        settingTableView(tableView)
+        tableView.delegate = self
+        tableView.dataSource = self
+        tableView.register(TableViewCell.self, forCellReuseIdentifier: "cell")
+        tableView.snp.makeConstraints { make in
+            make.top.equalTo(collectionView.snp.bottom).offset(20)
+            make.left.right.equalToSuperview().inset(5)
+            make.bottom.equalToSuperview().inset(20)
+        }
+        
+        
     }
     
     //MARK: - Navigation Bar
@@ -85,8 +103,10 @@ class ViewController: UIViewController, UISearchResultsUpdating {
                 }
 
                 self?.offerModel = model
+                self?.weatherOfferModel = model?.list?.first?.weather?.first 
                 DispatchQueue.main.async {
                     self?.collectionView.reloadData()
+                    self?.tableView.reloadData()
                 }
             }
         }
@@ -101,10 +121,9 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource, 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! WeatherCollectionViewCell
 
-        if let listOfferModel = offerModel?.list?[indexPath.item] {
+        if let listOfferModel = offerModel?.list?[indexPath.item], let weatherOfferModel = weatherOfferModel {
             cell.configure(with: listOfferModel)
         }
-        cell.contentView.backgroundColor = UIColor(red: 175/255, green: 238/255, blue: 238/255, alpha: 1)
         cell.contentView.layer.borderWidth = 1.0
         cell.contentView.layer.cornerRadius = 8.0
         cell.contentView.layer.masksToBounds = true
@@ -114,52 +133,82 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource, 
 
     // MARK: - UICollectionViewDelegateFlowLayout
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: collectionView.frame.width, height: collectionView.frame.height)
+        let cellWidth = collectionView.bounds.width - 10
+            let cellHeight = collectionView.bounds.height - 10
+            return CGSize(width: cellWidth, height: cellHeight)
     }
 }
 
-class WeatherCollectionViewCell: UICollectionViewCell {
+//MARK: - UITableViewDelegate, UITableViewDataSource
 
+extension ViewController: UITableViewDelegate, UITableViewDataSource {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return self.offerModel?.list?.count ?? 0
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath) as! TableViewCell
+
+                if let weeklyList = offerModel?.list?[indexPath.row] {
+                    cell.configure(with: weeklyList)
+                }
+
+                return cell
+    }
+    
+    
+}
+
+//MARK: - UICollectionViewCell
+
+class WeatherCollectionViewCell: UICollectionViewCell {
+    
     var timeLabel: UILabel!
     var temperatureLabel: UILabel!
     var weatherIconImageView: UIImageView!
-
+    var descriptionLabel: UILabel!
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupSubviews()
     }
-
+    
     required init?(coder: NSCoder) {
         super.init(coder: coder)
         setupSubviews()
     }
-
+    
     private func setupSubviews() {
         timeLabel = UILabel()
         temperatureLabel = UILabel()
         weatherIconImageView = UIImageView()
-
+        descriptionLabel = UILabel()
+        
         contentView.addSubview(timeLabel)
         contentView.addSubview(temperatureLabel)
         contentView.addSubview(weatherIconImageView)
-
-       
+        contentView.addSubview(descriptionLabel)
+        
+        
         timeLabel.snp.makeConstraints { make in
             make.top.equalTo(contentView.snp.top).offset(8)
             make.leading.equalTo(contentView.snp.leading).offset(16)
             make.trailing.equalTo(contentView.snp.trailing).offset(-16)
         }
 
-        
         temperatureLabel.snp.makeConstraints { make in
             make.top.equalTo(timeLabel.snp.bottom).offset(8)
             make.leading.equalTo(contentView.snp.leading).offset(16)
             make.trailing.equalTo(contentView.snp.trailing).offset(-16)
         }
 
-       
         weatherIconImageView.snp.makeConstraints { make in
             make.top.equalTo(temperatureLabel.snp.bottom).offset(8)
+            make.centerX.equalTo(contentView.snp.centerX)
+        }
+
+        descriptionLabel.snp.makeConstraints { make in
+            make.top.equalTo(weatherIconImageView.snp.bottom).offset(8)
             make.centerX.equalTo(contentView.snp.centerX)
             make.bottom.equalTo(contentView.snp.bottom).offset(-8)
         }
@@ -178,11 +227,34 @@ class WeatherCollectionViewCell: UICollectionViewCell {
                 temperatureLabel.text = "N/A"
             }
 
-            if let icon = listOfferModel.icon, let imageName = weatherIconMapping[icon] {
-                weatherIconImageView.image = UIImage(named: imageName)
+            if let weather = listOfferModel.weather?.first {
+                if let icon = weather.icon, let imageName = weatherIconMapping[icon] {
+                    weatherIconImageView.image = UIImage(named: imageName)
+                } else {
+                    weatherIconImageView.image = nil
+                }
+
+                if let description = weather.description {
+                    descriptionLabel.text = description
+                } else {
+                    descriptionLabel.text = "N/A"
+                }
             } else {
+                
                 weatherIconImageView.image = nil
+                descriptionLabel.text = "N/A"
             }
         }
-    
 }
+    
+    //MARK: - TableViewCell
+    class TableViewCell: UITableViewCell {
+        func configure(with weeklyList: ListOfferModel) {
+            
+            
+            
+            
+        }
+        
+    }
+

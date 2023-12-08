@@ -13,4 +13,7 @@ class CityModel: Codable {
     var name: String
     var county: String?
     var population: Float?
+    var timezone: Int?
+    var sunrise: Int?
+    var sunset: Int?
 }

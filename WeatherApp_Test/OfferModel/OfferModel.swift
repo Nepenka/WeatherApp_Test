@@ -16,4 +16,6 @@ class OfferModel: Codable {
     var cnt:Float
     var list:[ListOfferModel]?
     var city: CityModel?
+    var wind: WindOfferModel?
+    var weather: WeatherOfferModel?
 }

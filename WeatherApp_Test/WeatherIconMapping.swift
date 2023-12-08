@@ -8,12 +8,14 @@
 import Foundation
 
 
-let weatherIconMapping: [String: String] = [
-    "01n": "clear_sky",
-    "02n": "few_clouds",
-     "04n": "broken_clouds",
-    "10d": "light_rain",
-    "13d":"light snow",
-     "13n":"snow"
+
+public let weatherIconMapping: [String:String] = [
+    
+    "01n":"Clear",
+    "03n":"Clouds",
+    "04n":"Clouds",
+    "04d":"Clouds",
+    "10d":"Rain",
+    "13n":"Snow"
     
 ]
