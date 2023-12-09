@@ -7,7 +7,7 @@
 
 import UIKit
 import SnapKit
-
+import CoreData
 
 
 class ViewController: UIViewController, UISearchResultsUpdating {
@@ -17,6 +17,7 @@ class ViewController: UIViewController, UISearchResultsUpdating {
     var offerModel: OfferModel?
     var tableView: UITableView = .init()
     var weatherOfferModel: WeatherOfferModel?
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -30,20 +31,18 @@ class ViewController: UIViewController, UISearchResultsUpdating {
         
     }
     
+//MARK: - UICollectionView
+    
     func setupCollectionView() {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .horizontal
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        view.addSubview(collectionView)
+        settingCollectionView(collectionView)
         collectionView.delegate = self
         collectionView.dataSource = self
-        collectionView.backgroundColor = .white
-        collectionView.isPagingEnabled = true
-        collectionView.layer.borderColor = UIColor.black.cgColor
-        collectionView.layer.cornerRadius = 10.0
-        collectionView.layer.borderWidth = 2.0
-        collectionView.layer.masksToBounds = true
+        
         collectionView.register(WeatherCollectionViewCell.self, forCellWithReuseIdentifier: "cell")
-        view.addSubview(collectionView)
         
         collectionView.snp.makeConstraints { make in
             make.right.left.equalToSuperview().inset(5)
@@ -52,7 +51,7 @@ class ViewController: UIViewController, UISearchResultsUpdating {
         }
     }
     
-//MARK - UITableView
+//MARK: - UITableView
     
     func setupTableView() {
         view.addSubview(tableView)
@@ -70,48 +69,50 @@ class ViewController: UIViewController, UISearchResultsUpdating {
     }
     
     //MARK: - Navigation Bar
-    fileprivate func setupNavigationBar() {
-        self.navigationItem.title = "WeatherWise"
-        self.navigationController?.navigationBar.prefersLargeTitles = true
-        
-        let searchController = UISearchController(searchResultsController: nil)
-        searchController.searchResultsUpdater = self
-        navigationItem.searchController = searchController
-        navigationItem.hidesSearchBarWhenScrolling = false
-    }
-    
-    
-    
-    // MARK: - UISearchResultsUpdating
-    func updateSearchResults(for searchController: UISearchController) {
-        guard let city = searchController.searchBar.text, !city.isEmpty else {
-            return
-        }
+       fileprivate func setupNavigationBar() {
+           self.navigationItem.title = "WeatherWise"
+           self.navigationController?.navigationBar.prefersLargeTitles = true
+           
+           let searchController = UISearchController(searchResultsController: nil)
+           searchController.searchResultsUpdater = self
+           navigationItem.searchController = searchController
+           navigationItem.hidesSearchBarWhenScrolling = false
+       }
+       
+       
+       
+       // MARK: - UISearchResultsUpdating
+       func updateSearchResults(for searchController: UISearchController) {
+           guard let city = searchController.searchBar.text, !city.isEmpty else {
+               return
+           }
 
-        timer.invalidate()
+           timer.invalidate()
 
-        timer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false) { [weak self] _ in
-            NetworkManager.shared.getWeather(city: city) { (model, error) in
-                if let error = error {
-                    print("Error fetching weather data: \(error)")
-                    return
-                }
+           timer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false) { [weak self] _ in
+               NetworkManager.shared.getWeather(city: city) { (model, error) in
+                   if let error = error {
+                       print("Error fetching weather data: \(error)")
+                       return
+                   }
 
-                guard let list = model?.list, !list.isEmpty else {
-                    print("No weather data received")
-                    return
-                }
+                   guard let list = model?.list, !list.isEmpty else {
+                       print("No weather data received")
+                       return
+                   }
 
-                self?.offerModel = model
-                self?.weatherOfferModel = model?.list?.first?.weather?.first 
-                DispatchQueue.main.async {
-                    self?.collectionView.reloadData()
-                    self?.tableView.reloadData()
-                }
-            }
-        }
-    }
+                   self?.offerModel = model
+                   self?.weatherOfferModel = model?.list?.first?.weather?.first
+                   DispatchQueue.main.async {
+                       self?.collectionView.reloadData()
+                       self?.tableView.reloadData()
+                   }
+               }
+           }
+       }
 }
+
+//MARK: - UICollectionViewDelegate, UICollectionViewDataSource
 
 extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -143,22 +144,22 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource, 
 
 extension ViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return self.offerModel?.list?.count ?? 0
+        return offerModel?.list?.count ?? 0
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath) as! TableViewCell
+    
+            if let listOfferModel = offerModel?.list?[indexPath.row] {
+                cell.configure(with: listOfferModel)
+            }
 
-                if let weeklyList = offerModel?.list?[indexPath.row] {
-                    cell.configure(with: weeklyList)
-                }
-
-                return cell
+            return cell
     }
     
     
 }
-
+ 
 //MARK: - UICollectionViewCell
 
 class WeatherCollectionViewCell: UICollectionViewCell {
@@ -215,43 +216,53 @@ class WeatherCollectionViewCell: UICollectionViewCell {
     }
     
     func configure(with listOfferModel: ListOfferModel) {
-            if let time = listOfferModel.dt_txt {
-                timeLabel.text = time
-            } else {
-                timeLabel.text = "N/A"
-            }
+        if let time = listOfferModel.dt_txt {
+            timeLabel.text = time
+        } else {
+            timeLabel.text = "N/A"
+        }
 
-            if let temperature = listOfferModel.main?.temp {
-                temperatureLabel.text = "\(temperature) °F"
-            } else {
-                temperatureLabel.text = "N/A"
-            }
+        if let temperature = listOfferModel.main?.temp {
+            temperatureLabel.text = "\(temperature) °F"
+        } else {
+            temperatureLabel.text = "N/A"
+        }
 
-            if let weather = listOfferModel.weather?.first {
-                if let icon = weather.icon, let imageName = weatherIconMapping[icon] {
-                    weatherIconImageView.image = UIImage(named: imageName)
-                } else {
-                    weatherIconImageView.image = nil
-                }
-
-                if let description = weather.description {
-                    descriptionLabel.text = description
-                } else {
-                    descriptionLabel.text = "N/A"
-                }
-            } else {
+        if let weather = listOfferModel.weather?.first {
+            if let icon = weather.icon, let imageName = weatherIconMapping[icon] {
+                print("Имя изображения: \(imageName)")
                 
+                if let image = UIImage(named: imageName) {
+                    weatherIconImageView.image = image
+                } else {
+                    print("Изображение не найдено в каталоге ресурсов. Используется изображение по умолчанию.")
+                    weatherIconImageView.image = UIImage(named: "DefaultWeatherImage")
+                }
+            } else {
                 weatherIconImageView.image = nil
+            }
+
+            if let description = weather.description {
+                descriptionLabel.text = description
+            } else {
                 descriptionLabel.text = "N/A"
             }
+        } else {
+            weatherIconImageView.image = nil
+            descriptionLabel.text = "N/A"
         }
+    }
+
 }
     
-    //MARK: - TableViewCell
+    //MARK: - UITableViewCell
     class TableViewCell: UITableViewCell {
-        func configure(with weeklyList: ListOfferModel) {
-            
-            
+        func configure(with listOfferModel: ListOfferModel) {
+            let windSpeedText = "Wind Speed: \(listOfferModel.wind?.speed ?? 0)"
+            let degreeText = "Degree: \(listOfferModel.wind?.deg ?? 0)"
+            let gustText = "Gust: \(listOfferModel.wind?.gust ?? 0)"
+
+            textLabel?.text = "\(windSpeedText), \(degreeText), \(gustText)"
             
             
         }

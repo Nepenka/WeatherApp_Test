@@ -8,7 +8,7 @@
 import Foundation
 
 
-struct WindOfferModel: Codable {
+class WindOfferModel: Codable {
     var speed: Float?
     var deg: Int?
     var gust: Float?
