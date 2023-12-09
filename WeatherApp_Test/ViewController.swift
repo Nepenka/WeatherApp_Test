@@ -25,11 +25,12 @@ class ViewController: UIViewController, UISearchResultsUpdating {
         let navigationController = UINavigationController(rootViewController: self)
         UIApplication.shared.windows.first?.rootViewController = navigationController
         UIApplication.shared.windows.first?.makeKeyAndVisible()
+                
         setupNavigationBar()
         setupCollectionView()
         setupTableView()
-        
     }
+    
     
 //MARK: - UICollectionView
     
@@ -78,38 +79,76 @@ class ViewController: UIViewController, UISearchResultsUpdating {
            navigationItem.searchController = searchController
            navigationItem.hidesSearchBarWhenScrolling = false
        }
+    
+    //MARK: - Core Data (SaveData)
+    func saveWeatherDataToCoreData() {
+            guard let list = self.offerModel?.list else {
+                return
+            }
+
+            let weatherDataManager = WeatherDataManager()
+
+            for listOfferModel in list {
+                if let temp = listOfferModel.main?.temp,
+                   let dt_txt = listOfferModel.dt_txt,
+                   let weatherDescription = listOfferModel.weather?.first?.description {
+                    weatherDataManager.saveWeatherData(temp: temp, dt_txt: dt_txt, weatherDescription: weatherDescription)
+                }
+            }
+        }
+
+    //MARK: - FetchWeatherData
+    func fetchWeatherDataFromCoreData() {
+            let weatherDataManager = WeatherDataManager()
+            let weatherData = weatherDataManager.fetchWeatherData()
+
+        DispatchQueue.main.async {
+            self.collectionView.reloadData()
+            self.tableView.reloadData()
+        }
+    }
        
        
        
        // MARK: - UISearchResultsUpdating
-       func updateSearchResults(for searchController: UISearchController) {
-           guard let city = searchController.searchBar.text, !city.isEmpty else {
-               return
-           }
-
-           timer.invalidate()
-
-           timer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false) { [weak self] _ in
-               NetworkManager.shared.getWeather(city: city) { (model, error) in
-                   if let error = error {
-                       print("Error fetching weather data: \(error)")
-                       return
-                   }
-
-                   guard let list = model?.list, !list.isEmpty else {
-                       print("No weather data received")
-                       return
-                   }
-
-                   self?.offerModel = model
-                   self?.weatherOfferModel = model?.list?.first?.weather?.first
-                   DispatchQueue.main.async {
-                       self?.collectionView.reloadData()
-                       self?.tableView.reloadData()
-                   }
-               }
-           }
-       }
+    func updateSearchResults(for searchController: UISearchController) {
+        guard let city = searchController.searchBar.text, !city.isEmpty else {
+            return
+        }
+        
+        timer.invalidate()
+        
+        timer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false) { [weak self] _ in
+            guard let self = self else { return }
+            
+            if isConnectedToNetwork() {
+                
+                self.saveWeatherDataToCoreData()
+            } else {
+                
+                self.fetchWeatherDataFromCoreData()
+            }
+            
+            NetworkManager.shared.getWeather(city: city) { (model, error) in
+                if let error = error {
+                    print("Error fetching weather data: \(error)")
+                    return
+                }
+                
+                guard let list = model?.list, !list.isEmpty else {
+                    print("No weather data received")
+                    return
+                }
+                
+                self.offerModel = model
+                self.weatherOfferModel = model?.list?.first?.weather?.first
+                DispatchQueue.main.async {
+                    self.collectionView.reloadData()
+                    self.tableView.reloadData()
+                }
+            }
+        }
+    }
 }
 
 //MARK: - UICollectionViewDelegate, UICollectionViewDataSource
@@ -268,4 +307,3 @@ class WeatherCollectionViewCell: UICollectionViewCell {
         }
         
     }
-

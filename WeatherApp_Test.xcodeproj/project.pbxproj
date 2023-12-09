@@ -22,6 +22,7 @@
 		9D74C68B2B21DA5500265520 /* ListOfferModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D74C68A2B21DA5500265520 /* ListOfferModel.swift */; };
 		9D74C68D2B21DAA800265520 /* MainOfferModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D74C68C2B21DAA800265520 /* MainOfferModel.swift */; };
 		9D74C6902B21E6A400265520 /* CityModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D74C68F2B21E6A400265520 /* CityModel.swift */; };
+		9D797C9C2B24F61200831240 /* Reachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D797C9B2B24F61200831240 /* Reachability.swift */; };
 		9DC381B02B238D45006CC2E5 /* WindOfferModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DC381AF2B238D45006CC2E5 /* WindOfferModel.swift */; };
 		9DC381B22B238E3B006CC2E5 /* WeatherOfferModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DC381B12B238E3B006CC2E5 /* WeatherOfferModel.swift */; };
 		9DC381B42B2391BE006CC2E5 /* WeatherIconMapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DC381B32B2391BE006CC2E5 /* WeatherIconMapping.swift */; };
@@ -49,6 +50,7 @@
 		9D74C68A2B21DA5500265520 /* ListOfferModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListOfferModel.swift; sourceTree = "<group>"; };
 		9D74C68C2B21DAA800265520 /* MainOfferModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainOfferModel.swift; sourceTree = "<group>"; };
 		9D74C68F2B21E6A400265520 /* CityModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CityModel.swift; sourceTree = "<group>"; };
+		9D797C9B2B24F61200831240 /* Reachability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reachability.swift; sourceTree = "<group>"; };
 		9DC381AF2B238D45006CC2E5 /* WindOfferModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindOfferModel.swift; sourceTree = "<group>"; };
 		9DC381B12B238E3B006CC2E5 /* WeatherOfferModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherOfferModel.swift; sourceTree = "<group>"; };
 		9DC381B32B2391BE006CC2E5 /* WeatherIconMapping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherIconMapping.swift; sourceTree = "<group>"; };
@@ -122,6 +124,7 @@
 				9D74C6742B21CFA800265520 /* ViewController.swift */,
 				9D6385E82B23815200F8E288 /* SettingTableView.swift */,
 				9D6D77802B248786003579BB /* CollectionViewSetting.swift */,
+				9D797C9B2B24F61200831240 /* Reachability.swift */,
 				9DC381B32B2391BE006CC2E5 /* WeatherIconMapping.swift */,
 				9D74C6792B21CFAA00265520 /* Assets.xcassets */,
 				9D74C67B2B21CFAA00265520 /* LaunchScreen.storyboard */,
@@ -271,6 +274,7 @@
 				9D74C68B2B21DA5500265520 /* ListOfferModel.swift in Sources */,
 				9D6D77812B248786003579BB /* CollectionViewSetting.swift in Sources */,
 				9D68D14C2B24A35000DEB578 /* WeatherDataModel.xcdatamodeld in Sources */,
+				9D797C9C2B24F61200831240 /* Reachability.swift in Sources */,
 				9D74C6862B21D86A00265520 /* NetworkManager.swift in Sources */,
 				9D74C6752B21CFA800265520 /* ViewController.swift in Sources */,
 				9D74C6892B21D9CA00265520 /* OfferModel.swift in Sources */,
