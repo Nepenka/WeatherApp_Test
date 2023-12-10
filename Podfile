@@ -9,4 +9,5 @@ target 'WeatherApp_Test' do
 
 pod 'SnapKit'
 pod 'Kingfisher'
+pod 'Reachability'
 end

@@ -9,7 +9,7 @@
 import UIKit
 import CoreData
 
-class WeatherEntity: NSManagedObject, Encodable {
+class MyWeather: NSManagedObject, Encodable {
     @NSManaged var temp: Float
     @NSManaged var dt_txt: String
     @NSManaged var weatherDescription: String

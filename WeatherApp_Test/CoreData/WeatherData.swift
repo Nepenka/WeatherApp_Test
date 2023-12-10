@@ -8,12 +8,13 @@
 import UIKit
 import CoreData
 
+
 class WeatherDataManager {
-
-    let modelName = "WeatherDataModel"
-
+    
+    static let shared = WeatherDataManager()
+    
     lazy var persistentContainer: NSPersistentContainer = {
-        let container = NSPersistentContainer(name: modelName)
+        let container = NSPersistentContainer(name: "WeatherDataModel")
         container.loadPersistentStores(completionHandler: { _, error in
             if let error = error {
                 fatalError("Failed to load Core Data stack: \(error)")
@@ -21,38 +22,38 @@ class WeatherDataManager {
         })
         return container
     }()
-
+    
     func saveWeatherData(temp: Float, dt_txt: String, weatherDescription: String) {
         let context = persistentContainer.viewContext
         let weatherEntity = WeatherEntity(context: context)
-
+        
         weatherEntity.temp = temp
         weatherEntity.dt_txt = dt_txt
         weatherEntity.weatherDescription = weatherDescription
-
+        
         do {
             try context.save()
         } catch {
             print("Error saving weather data to Core Data: \(error)")
         }
     }
-
-    func fetchWeatherData() -> [Weather] {
+    
+    func fetchWeatherData() -> [WeatherEntity] {
         let context = persistentContainer.viewContext
-        let fetchRequest: NSFetchRequest<Weather> = Weather.fetchRequest()
+        let fetchRequest = NSFetchRequest<WeatherEntity>(entityName: "WeatherEntity")
 
         do {
             let weatherData = try context.fetch(fetchRequest)
             return weatherData
         } catch {
-            print("Error fetching weather data from Core Data: \(error)")
+            print("Ошибка при получении данных о погоде из Core Data: \(error)")
             return []
         }
     }
 
     func deleteOldWeatherData() {
         let context = persistentContainer.viewContext
-        let fetchRequest: NSFetchRequest<Weather> = Weather.fetchRequest()
+        let fetchRequest = NSFetchRequest<WeatherEntity>(entityName: "WeatherEntity")
 
         do {
             let weatherData = try context.fetch(fetchRequest)
@@ -62,7 +63,9 @@ class WeatherDataManager {
 
             try context.save()
         } catch {
-            print("Error deleting old weather data from Core Data: \(error)")
+            print("Ошибка при удалении старых данных о погоде из Core Data: \(error)")
         }
     }
+
+
 }

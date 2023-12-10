@@ -8,6 +8,7 @@
 import UIKit
 import SnapKit
 import CoreData
+import Reachability
 
 
 class ViewController: UIViewController, UISearchResultsUpdating {
@@ -17,7 +18,6 @@ class ViewController: UIViewController, UISearchResultsUpdating {
     var offerModel: OfferModel?
     var tableView: UITableView = .init()
     var weatherOfferModel: WeatherOfferModel?
-    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -30,6 +30,13 @@ class ViewController: UIViewController, UISearchResultsUpdating {
         setupCollectionView()
         setupTableView()
     }
+    
+    
+    
+    
+ //MARK: - Check Internet Connection And Load Data
+    
+    
     
     
 //MARK: - UICollectionView
@@ -85,7 +92,7 @@ class ViewController: UIViewController, UISearchResultsUpdating {
             guard let list = self.offerModel?.list else {
                 return
             }
-
+           
             let weatherDataManager = WeatherDataManager()
 
             for listOfferModel in list {
@@ -101,6 +108,8 @@ class ViewController: UIViewController, UISearchResultsUpdating {
     func fetchWeatherDataFromCoreData() {
             let weatherDataManager = WeatherDataManager()
             let weatherData = weatherDataManager.fetchWeatherData()
+            
+        
 
         DispatchQueue.main.async {
             self.collectionView.reloadData()
@@ -115,7 +124,7 @@ class ViewController: UIViewController, UISearchResultsUpdating {
         guard let city = searchController.searchBar.text, !city.isEmpty else {
             return
         }
-        
+    
         timer.invalidate()
         
         timer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false) { [weak self] _ in

@@ -1,20 +1,24 @@
 PODS:
   - Kingfisher (7.10.0)
+  - Reachability (3.2)
   - SnapKit (5.6.0)
 
 DEPENDENCIES:
   - Kingfisher
+  - Reachability
   - SnapKit
 
 SPEC REPOS:
   trunk:
     - Kingfisher
+    - Reachability
     - SnapKit
 
 SPEC CHECKSUMS:
   Kingfisher: a18f05d3b6d37d8650ee4a3e61d57a28fc6207f6
+  Reachability: 33e18b67625424e47b6cde6d202dce689ad7af96
   SnapKit: e01d52ebb8ddbc333eefe2132acf85c8227d9c25
 
-PODFILE CHECKSUM: c1d6851eddc6eb45e50d45df2a23370cfdcb31fe
+PODFILE CHECKSUM: 11196178dcf2d4d3bf346090afb13bd863f231a5
 
 COCOAPODS: 1.11.3
