@@ -7,8 +7,8 @@
 
 import UIKit
 import SnapKit
-import CoreData
 import Reachability
+import CoreLocation
 
 
 class ViewController: UIViewController, UISearchResultsUpdating {
@@ -18,6 +18,7 @@ class ViewController: UIViewController, UISearchResultsUpdating {
     var offerModel: OfferModel?
     var tableView: UITableView = .init()
     var weatherOfferModel: WeatherOfferModel?
+    let locationManager = CLLocationManager()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -25,18 +26,23 @@ class ViewController: UIViewController, UISearchResultsUpdating {
         let navigationController = UINavigationController(rootViewController: self)
         UIApplication.shared.windows.first?.rootViewController = navigationController
         UIApplication.shared.windows.first?.makeKeyAndVisible()
-                
         setupNavigationBar()
         setupCollectionView()
         setupTableView()
+        setupLocationManager()
+        
     }
     
+
     
     
+//MARK: - Location Manager
     
- //MARK: - Check Internet Connection And Load Data
-    
-    
+    func setupLocationManager() {
+        locationManager.delegate = self
+        locationManager.requestWhenInUseAuthorization()
+        locationManager.startUpdatingLocation()
+    }
     
     
 //MARK: - UICollectionView
@@ -109,7 +115,6 @@ class ViewController: UIViewController, UISearchResultsUpdating {
             let weatherDataManager = WeatherDataManager()
             let weatherData = weatherDataManager.fetchWeatherData()
             
-        
 
         DispatchQueue.main.async {
             self.collectionView.reloadData()
@@ -124,6 +129,13 @@ class ViewController: UIViewController, UISearchResultsUpdating {
         guard let city = searchController.searchBar.text, !city.isEmpty else {
             return
         }
+        
+        if let city = searchController.searchBar.text, !city.isEmpty {
+            
+            } else if let location = locationManager.location {
+                let latitude = location.coordinate.latitude
+                let longitude = location.coordinate.longitude
+            }
     
         timer.invalidate()
         
@@ -136,6 +148,7 @@ class ViewController: UIViewController, UISearchResultsUpdating {
             } else {
                 
                 self.fetchWeatherDataFromCoreData()
+                showNoInternetConnectionAlert(in: self)
             }
             
             NetworkManager.shared.getWeather(city: city) { (model, error) in
@@ -149,9 +162,12 @@ class ViewController: UIViewController, UISearchResultsUpdating {
                     return
                 }
                 
-                self.offerModel = model
-                self.weatherOfferModel = model?.list?.first?.weather?.first
+                self.saveWeatherDataToCoreData()
+                
+                
                 DispatchQueue.main.async {
+                    self.offerModel = model
+                    self.weatherOfferModel = model?.list?.first?.weather?.first
                     self.collectionView.reloadData()
                     self.tableView.reloadData()
                 }
@@ -159,6 +175,64 @@ class ViewController: UIViewController, UISearchResultsUpdating {
         }
     }
 }
+
+// MARK: - Reverse Geocoding
+
+func getCountryInfo(latitude: Double, longitude: Double, completion: @escaping (String) -> Void) {
+        let location = CLLocation(latitude: latitude, longitude: longitude)
+        let geocoder = CLGeocoder()
+
+        geocoder.reverseGeocodeLocation(location) { placemarks, error in
+            guard let placemark = placemarks?.first, error == nil else {
+                print("Reverse geocoding error: \(error?.localizedDescription ?? "")")
+                completion("N/A")
+                return
+            }
+
+            if let country = placemark.country {
+                completion(country)
+            } else {
+                completion("N/A")
+            }
+        }
+}
+
+
+//MARK: - CLLocationManagerDelegate
+
+extension ViewController: CLLocationManagerDelegate {
+    
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard let location = locations.last else { return }
+        let latitude = location.coordinate.latitude
+        let longitude = location.coordinate.longitude
+
+        getWeatherForLocation(latitude: latitude, longitude: longitude) { [weak self] (model: OfferModel?, error: Error?) in
+            guard let self = self else { return }
+
+            if let error = error {
+                print("Error fetching weather data: \(error)")
+                return
+            }
+
+            self.saveWeatherDataToCoreData()
+
+            DispatchQueue.main.async {
+                self.offerModel = model
+                self.weatherOfferModel = model?.list?.first?.weather?.first
+                self.collectionView.reloadData()
+                self.tableView.reloadData()
+            }
+        }
+    }
+    func getWeatherForLocation(latitude: Double, longitude: Double, completion: @escaping (OfferModel?, Error?) -> Void) {
+        WeatherForLocation.shared.weatherResult = completion
+        WeatherForLocation.shared.getWeatherForLocation(latitude: latitude, longitude: longitude)
+    }
+
+}
+
+
 
 //MARK: - UICollectionViewDelegate, UICollectionViewDataSource
 
@@ -216,6 +290,7 @@ class WeatherCollectionViewCell: UICollectionViewCell {
     var temperatureLabel: UILabel!
     var weatherIconImageView: UIImageView!
     var descriptionLabel: UILabel!
+    var cityNameLabel: UILabel!
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -232,11 +307,13 @@ class WeatherCollectionViewCell: UICollectionViewCell {
         temperatureLabel = UILabel()
         weatherIconImageView = UIImageView()
         descriptionLabel = UILabel()
+        cityNameLabel = UILabel()
         
         contentView.addSubview(timeLabel)
         contentView.addSubview(temperatureLabel)
         contentView.addSubview(weatherIconImageView)
         contentView.addSubview(descriptionLabel)
+        contentView.addSubview(cityNameLabel)
         
         
         timeLabel.snp.makeConstraints { make in
@@ -261,6 +338,11 @@ class WeatherCollectionViewCell: UICollectionViewCell {
             make.centerX.equalTo(contentView.snp.centerX)
             make.bottom.equalTo(contentView.snp.bottom).offset(-8)
         }
+        
+        cityNameLabel.snp.makeConstraints { make in
+            make.top.equalTo(contentView.snp.top).offset(8)
+            make.trailing.equalTo(contentView.snp.trailing).offset(-16)
+        }
     }
     
     func configure(with listOfferModel: ListOfferModel) {
@@ -275,7 +357,13 @@ class WeatherCollectionViewCell: UICollectionViewCell {
         } else {
             temperatureLabel.text = "N/A"
         }
-
+        
+        if let city = listOfferModel.cityName {
+            cityNameLabel.text = city.name
+        } else {
+            cityNameLabel.text = "N/A"
+        }
+        
         if let weather = listOfferModel.weather?.first {
             if let icon = weather.icon, let imageName = weatherIconMapping[icon] {
                 print("Имя изображения: \(imageName)")

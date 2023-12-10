@@ -19,7 +19,7 @@
 			</array>
 		</dict>
 	</dict>
-    <key>NSLocationWhenInUseUsageDescription</key>
-    <string>We need your location for a specific reason</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>We need your location for a specific reason</string>
 </dict>
 </plist>

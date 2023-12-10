@@ -25,47 +25,54 @@ class WeatherDataManager {
     
     func saveWeatherData(temp: Float, dt_txt: String, weatherDescription: String) {
         let context = persistentContainer.viewContext
-        let weatherEntity = WeatherEntity(context: context)
-        
-        weatherEntity.temp = temp
-        weatherEntity.dt_txt = dt_txt
-        weatherEntity.weatherDescription = weatherDescription
-        
-        do {
-            try context.save()
-        } catch {
-            print("Error saving weather data to Core Data: \(error)")
+
+        context.perform {
+            let weatherEntity = WeatherEntity(context: context)
+            weatherEntity.temp = temp
+            weatherEntity.dt_txt = dt_txt
+            weatherEntity.weatherDescription = weatherDescription
+
+            do {
+                try context.save()
+            } catch {
+                print("Error saving weather data to Core Data: \(error)")
+            }
         }
     }
     
     func fetchWeatherData() -> [WeatherEntity] {
         let context = persistentContainer.viewContext
-        let fetchRequest = NSFetchRequest<WeatherEntity>(entityName: "WeatherEntity")
+        var weatherData: [WeatherEntity] = []
 
-        do {
-            let weatherData = try context.fetch(fetchRequest)
-            return weatherData
-        } catch {
-            print("Ошибка при получении данных о погоде из Core Data: \(error)")
-            return []
+        context.performAndWait {
+            let fetchRequest = NSFetchRequest<WeatherEntity>(entityName: "WeatherEntity")
+
+            do {
+                weatherData = try context.fetch(fetchRequest)
+            } catch {
+                print("Ошибка при получении данных о погоде из Core Data: \(error)")
+            }
         }
+
+        return weatherData
     }
 
     func deleteOldWeatherData() {
         let context = persistentContainer.viewContext
-        let fetchRequest = NSFetchRequest<WeatherEntity>(entityName: "WeatherEntity")
 
-        do {
-            let weatherData = try context.fetch(fetchRequest)
-            for weatherEntity in weatherData {
-                context.delete(weatherEntity)
+        context.perform {
+            let fetchRequest = NSFetchRequest<WeatherEntity>(entityName: "WeatherEntity")
+
+            do {
+                let weatherData = try context.fetch(fetchRequest)
+                for weatherEntity in weatherData {
+                    context.delete(weatherEntity)
+                }
+
+                try context.save()
+            } catch {
+                print("Ошибка при удалении старых данных о погоде из Core Data: \(error)")
             }
-
-            try context.save()
-        } catch {
-            print("Ошибка при удалении старых данных о погоде из Core Data: \(error)")
         }
     }
-
-
 }
