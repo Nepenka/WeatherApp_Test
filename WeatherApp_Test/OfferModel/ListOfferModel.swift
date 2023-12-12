@@ -16,5 +16,5 @@ class ListOfferModel: Codable {
     var dt_txt: String?
     var wind: WindOfferModel?
     var weather: [WeatherOfferModel]?
-    var cityName: CityModel?
+    var cityModel: [CityModel]?
 }

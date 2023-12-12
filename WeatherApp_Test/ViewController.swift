@@ -162,6 +162,14 @@ class ViewController: UIViewController, UISearchResultsUpdating {
                     return
                 }
                 
+                if list.isEmpty {
+                    print("The list is empty.")
+                } else {
+                    print("Unexpected situation: The list is not empty, but the first item is nil.")
+                    print("List content: \(list)")
+                }
+                
+                
                 self.saveWeatherDataToCoreData()
                 
                 
@@ -214,6 +222,8 @@ extension ViewController: CLLocationManagerDelegate {
                 print("Error fetching weather data: \(error)")
                 return
             }
+            
+            
 
             self.saveWeatherDataToCoreData()
 
@@ -253,7 +263,7 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource, 
 
         return cell
     }
-
+    
     // MARK: - UICollectionViewDelegateFlowLayout
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let cellWidth = collectionView.bounds.width - 10
@@ -290,7 +300,6 @@ class WeatherCollectionViewCell: UICollectionViewCell {
     var temperatureLabel: UILabel!
     var weatherIconImageView: UIImageView!
     var descriptionLabel: UILabel!
-    var cityNameLabel: UILabel!
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -307,13 +316,11 @@ class WeatherCollectionViewCell: UICollectionViewCell {
         temperatureLabel = UILabel()
         weatherIconImageView = UIImageView()
         descriptionLabel = UILabel()
-        cityNameLabel = UILabel()
         
         contentView.addSubview(timeLabel)
         contentView.addSubview(temperatureLabel)
         contentView.addSubview(weatherIconImageView)
         contentView.addSubview(descriptionLabel)
-        contentView.addSubview(cityNameLabel)
         
         
         timeLabel.snp.makeConstraints { make in
@@ -338,11 +345,6 @@ class WeatherCollectionViewCell: UICollectionViewCell {
             make.centerX.equalTo(contentView.snp.centerX)
             make.bottom.equalTo(contentView.snp.bottom).offset(-8)
         }
-        
-        cityNameLabel.snp.makeConstraints { make in
-            make.top.equalTo(contentView.snp.top).offset(8)
-            make.trailing.equalTo(contentView.snp.trailing).offset(-16)
-        }
     }
     
     func configure(with listOfferModel: ListOfferModel) {
@@ -357,17 +359,11 @@ class WeatherCollectionViewCell: UICollectionViewCell {
         } else {
             temperatureLabel.text = "N/A"
         }
-        
-        if let city = listOfferModel.cityName {
-            cityNameLabel.text = city.name
-        } else {
-            cityNameLabel.text = "N/A"
-        }
-        
+
         if let weather = listOfferModel.weather?.first {
             if let icon = weather.icon, let imageName = weatherIconMapping[icon] {
                 print("Имя изображения: \(imageName)")
-                
+
                 if let image = UIImage(named: imageName) {
                     weatherIconImageView.image = image
                 } else {

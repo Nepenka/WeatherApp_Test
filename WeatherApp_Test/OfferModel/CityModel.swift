@@ -9,11 +9,11 @@ import Foundation
 
 
 class CityModel: Codable {
-    var id: Float
+    var id: Int
     var name: String
-    var county: String?
-    var population: Float?
-    var timezone: Int?
-    var sunrise: Int?
-    var sunset: Int?
+    var country: String
+    var population: Int
+    var timezone: Int
+    var sunrise: Int
+    var sunset: Int
 }
