@@ -56,8 +56,9 @@ class ViewController: UIViewController, UISearchResultsUpdating {
         collectionView.delegate = self
         collectionView.dataSource = self
         
-        collectionView.register(WeatherCollectionViewCell.self, forCellWithReuseIdentifier: "cell")
-        
+        collectionView.register(WeatherCollectionViewCell.self, forCellWithReuseIdentifier: String(describing: WeatherCollectionViewCell.self))
+      collectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: String(describing: UICollectionViewCell.self))
+
         collectionView.snp.makeConstraints { make in
             make.right.left.equalToSuperview().inset(5)
             make.top.equalToSuperview().inset(350)
@@ -123,19 +124,11 @@ class ViewController: UIViewController, UISearchResultsUpdating {
     }
        
        
-       
        // MARK: - UISearchResultsUpdating
     func updateSearchResults(for searchController: UISearchController) {
         guard let city = searchController.searchBar.text, !city.isEmpty else {
             return
         }
-        
-        if let city = searchController.searchBar.text, !city.isEmpty {
-            
-            } else if let location = locationManager.location {
-                let latitude = location.coordinate.latitude
-                let longitude = location.coordinate.longitude
-            }
     
         timer.invalidate()
         
@@ -252,14 +245,13 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource, 
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! WeatherCollectionViewCell
+      guard  let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: WeatherCollectionViewCell.self), for: indexPath) as? WeatherCollectionViewCell else {
+        return collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: UICollectionViewCell.self), for: indexPath)
+      }
 
-        if let listOfferModel = offerModel?.list?[indexPath.item], let weatherOfferModel = weatherOfferModel {
+        if let listOfferModel = offerModel?.list?[indexPath.item] {
             cell.configure(with: listOfferModel)
         }
-        cell.contentView.layer.borderWidth = 1.0
-        cell.contentView.layer.cornerRadius = 8.0
-        cell.contentView.layer.masksToBounds = true
 
         return cell
     }
@@ -292,111 +284,3 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
     
 }
  
-//MARK: - UICollectionViewCell
-
-class WeatherCollectionViewCell: UICollectionViewCell {
-    
-    var timeLabel: UILabel!
-    var temperatureLabel: UILabel!
-    var weatherIconImageView: UIImageView!
-    var descriptionLabel: UILabel!
-    
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        setupSubviews()
-    }
-    
-    required init?(coder: NSCoder) {
-        super.init(coder: coder)
-        setupSubviews()
-    }
-    
-    private func setupSubviews() {
-        timeLabel = UILabel()
-        temperatureLabel = UILabel()
-        weatherIconImageView = UIImageView()
-        descriptionLabel = UILabel()
-        
-        contentView.addSubview(timeLabel)
-        contentView.addSubview(temperatureLabel)
-        contentView.addSubview(weatherIconImageView)
-        contentView.addSubview(descriptionLabel)
-        
-        
-        timeLabel.snp.makeConstraints { make in
-            make.top.equalTo(contentView.snp.top).offset(8)
-            make.leading.equalTo(contentView.snp.leading).offset(16)
-            make.trailing.equalTo(contentView.snp.trailing).offset(-16)
-        }
-
-        temperatureLabel.snp.makeConstraints { make in
-            make.top.equalTo(timeLabel.snp.bottom).offset(8)
-            make.leading.equalTo(contentView.snp.leading).offset(16)
-            make.trailing.equalTo(contentView.snp.trailing).offset(-16)
-        }
-
-        weatherIconImageView.snp.makeConstraints { make in
-            make.top.equalTo(temperatureLabel.snp.bottom).offset(8)
-            make.centerX.equalTo(contentView.snp.centerX)
-        }
-
-        descriptionLabel.snp.makeConstraints { make in
-            make.top.equalTo(weatherIconImageView.snp.bottom).offset(8)
-            make.centerX.equalTo(contentView.snp.centerX)
-            make.bottom.equalTo(contentView.snp.bottom).offset(-8)
-        }
-    }
-    
-    func configure(with listOfferModel: ListOfferModel) {
-        if let time = listOfferModel.dt_txt {
-            timeLabel.text = time
-        } else {
-            timeLabel.text = "N/A"
-        }
-
-        if let temperature = listOfferModel.main?.temp {
-            temperatureLabel.text = "\(temperature) °F"
-        } else {
-            temperatureLabel.text = "N/A"
-        }
-
-        if let weather = listOfferModel.weather?.first {
-            if let icon = weather.icon, let imageName = weatherIconMapping[icon] {
-                print("Имя изображения: \(imageName)")
-
-                if let image = UIImage(named: imageName) {
-                    weatherIconImageView.image = image
-                } else {
-                    print("Изображение не найдено в каталоге ресурсов. Используется изображение по умолчанию.")
-                    weatherIconImageView.image = UIImage(named: "DefaultWeatherImage")
-                }
-            } else {
-                weatherIconImageView.image = nil
-            }
-
-            if let description = weather.description {
-                descriptionLabel.text = description
-            } else {
-                descriptionLabel.text = "N/A"
-            }
-        } else {
-            weatherIconImageView.image = nil
-            descriptionLabel.text = "N/A"
-        }
-    }
-
-}
-    
-    //MARK: - UITableViewCell
-    class TableViewCell: UITableViewCell {
-        func configure(with listOfferModel: ListOfferModel) {
-            let windSpeedText = "Wind Speed: \(listOfferModel.wind?.speed ?? 0)"
-            let degreeText = "Degree: \(listOfferModel.wind?.deg ?? 0)"
-            let gustText = "Gust: \(listOfferModel.wind?.gust ?? 0)"
-
-            textLabel?.text = "\(windSpeedText), \(degreeText), \(gustText)"
-            
-            
-        }
-        
-    }

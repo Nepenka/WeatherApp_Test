@@ -39,6 +39,8 @@ extension WeatherForLocation: CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         weatherResult?(nil, error)
     }
+    
+    
 }
 
 extension WeatherForLocation {
