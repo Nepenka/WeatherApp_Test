@@ -19,6 +19,7 @@ class ViewController: UIViewController, UISearchResultsUpdating {
     var tableView: UITableView = .init()
     var weatherOfferModel: WeatherOfferModel?
     let locationManager = CLLocationManager()
+    var temperatureSegmentedControl: UISegmentedControl!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -33,6 +34,8 @@ class ViewController: UIViewController, UISearchResultsUpdating {
         setupCollectionView()
         setupTableView()
         setupLocationManager()
+        updateTemperatureDisplay()
+        setupSegmentedControl()
         
     }
     
@@ -86,6 +89,62 @@ class ViewController: UIViewController, UISearchResultsUpdating {
         
     }
     
+    
+    //MARK: - UISegmentedControl
+    func setupSegmentedControl() {
+        temperatureSegmentedControl = UISegmentedControl(items: ["°C", "°F"])
+        temperatureSegmentedControl.selectedSegmentIndex = UserDefaults.standard.integer(forKey: "temperatureUnitIndex")
+        temperatureSegmentedControl.addTarget(self, action: #selector(temperatureUnitChanged), for: .valueChanged)
+        
+        navigationItem.titleView = temperatureSegmentedControl
+        updateTemperatureDisplay()
+    }
+    
+    @objc func temperatureUnitChanged() {
+        let selectedIndex = temperatureSegmentedControl.selectedSegmentIndex
+            UserDefaults.standard.set(selectedIndex, forKey: "temperatureUnitIndex")
+            let temperatureUnit = (selectedIndex == 0) ? "celsius" : "fahrenheit"
+            UserDefaults.standard.set(temperatureUnit, forKey: "temperatureUnit")
+
+            updateTemperatureDisplay()
+        }
+    
+    func updateTemperatureDisplay() {
+        guard let collectionView = collectionView else {
+            return
+        }
+
+        for cell in collectionView.visibleCells {
+            guard let indexPath = collectionView.indexPath(for: cell),
+                  let listOfferModel = offerModel?.list?[indexPath.item] else {
+                continue
+            }
+
+            if let temperatureKelvin = listOfferModel.main?.temp {
+                var temperatureValue: Double
+                let temperatureUnit = UserDefaults.standard.string(forKey: "temperatureUnit") ?? "celsius"
+
+                if temperatureUnit == "celsius" {
+                    temperatureValue = Double(temperatureKelvin - 273.15)
+                } else {
+                    temperatureValue = Double((temperatureKelvin - 273.15) * 9/5 + 32)
+                }
+
+                let temperatureUnitString = (temperatureUnit == "celsius") ? "°C" : "°F"
+                let formattedTemperature = String(format: "%.1f", temperatureValue)
+                if let weatherCell = cell as? WeatherCollectionViewCell {
+                    weatherCell.temperatureLabel.text = "\(formattedTemperature) \(temperatureUnitString)"
+                }
+            } else {
+                if let weatherCell = cell as? WeatherCollectionViewCell {
+                    weatherCell.temperatureLabel.text = "N/A"
+                }
+            }
+        }
+
+        tableView.reloadData()
+    }
+
     //MARK: - Navigation Bar
     fileprivate func setupNavigationBar() {
         self.navigationItem.title = "WeatherWise"
@@ -139,7 +198,6 @@ class ViewController: UIViewController, UISearchResultsUpdating {
                 guard let self = self else { return }
 
                 if isConnectedToNetwork() {
-                    // Fetch weather data from the internet
                     NetworkManager.shared.getWeather(city: city) { (model, error) in
                         if let error = error {
                             print("Error fetching weather data: \(error)")
@@ -190,6 +248,7 @@ func getCountryInfo(latitude: Double, longitude: Double, completion: @escaping (
             }
         }
 }
+
 
 
 //MARK: - CLLocationManagerDelegate
@@ -243,6 +302,7 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource, 
       }
 
         if let listOfferModel = offerModel?.list?[indexPath.item] {
+        
             cell.configure(with: listOfferModel)
         }
 

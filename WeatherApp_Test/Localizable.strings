@@ -1,0 +1,14 @@
+/* 
+  Localizable.strings
+  WeatherApp_Test
+
+  Created by 123 on 14.12.23.
+  
+*/
+
+
+/* English */
+"temperature_unit" = "°F";
+
+/* Russian */
+"temperature_unit" = "°C";

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9D3C79672B2B2BCE00740074 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9D3C79662B2B2BCE00740074 /* Localizable.strings */; };
+		9D3C79692B2B2DB800740074 /* LanguageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D3C79682B2B2DB800740074 /* LanguageManager.swift */; };
 		9D44A7BD2B2A5F9600B3331C /* WeatherCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D44A7BC2B2A5F9600B3331C /* WeatherCollectionViewCell.swift */; };
 		9D44A7BF2B2A5FF100B3331C /* TableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D44A7BE2B2A5FF100B3331C /* TableViewCell.swift */; };
 		9D6385E92B23815200F8E288 /* SettingTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D6385E82B23815200F8E288 /* SettingTableView.swift */; };
@@ -36,6 +38,8 @@
 		2BC1C9C422DACE35FBC1BB9A /* Pods-WeatherApp_Test.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WeatherApp_Test.debug.xcconfig"; path = "Target Support Files/Pods-WeatherApp_Test/Pods-WeatherApp_Test.debug.xcconfig"; sourceTree = "<group>"; };
 		546A34FC16242E8CE1F35CFA /* Pods-WeatherApp_Test.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WeatherApp_Test.release.xcconfig"; path = "Target Support Files/Pods-WeatherApp_Test/Pods-WeatherApp_Test.release.xcconfig"; sourceTree = "<group>"; };
 		9995943411CD2F1CCDA77CCA /* Pods_WeatherApp_Test.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_WeatherApp_Test.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		9D3C79662B2B2BCE00740074 /* Localizable.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = Localizable.strings; sourceTree = "<group>"; };
+		9D3C79682B2B2DB800740074 /* LanguageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageManager.swift; sourceTree = "<group>"; };
 		9D44A7BC2B2A5F9600B3331C /* WeatherCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherCollectionViewCell.swift; sourceTree = "<group>"; };
 		9D44A7BE2B2A5FF100B3331C /* TableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableViewCell.swift; sourceTree = "<group>"; };
 		9D6385E82B23815200F8E288 /* SettingTableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingTableView.swift; sourceTree = "<group>"; };
@@ -134,7 +138,9 @@
 				9D44A7BE2B2A5FF100B3331C /* TableViewCell.swift */,
 				9D44A7BC2B2A5F9600B3331C /* WeatherCollectionViewCell.swift */,
 				9DC381B32B2391BE006CC2E5 /* WeatherIconMapping.swift */,
+				9D3C79682B2B2DB800740074 /* LanguageManager.swift */,
 				9D74C67E2B21CFAA00265520 /* Info.plist */,
+				9D3C79662B2B2BCE00740074 /* Localizable.strings */,
 			);
 			path = WeatherApp_Test;
 			sourceTree = "<group>";
@@ -240,6 +246,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9D74C67D2B21CFAA00265520 /* LaunchScreen.storyboard in Resources */,
+				9D3C79672B2B2BCE00740074 /* Localizable.strings in Resources */,
 				9D74C67A2B21CFAA00265520 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -308,6 +315,7 @@
 				9D44A7BF2B2A5FF100B3331C /* TableViewCell.swift in Sources */,
 				9D74C6712B21CFA800265520 /* AppDelegate.swift in Sources */,
 				9D68D1502B24A6D800DEB578 /* MyWeather.swift in Sources */,
+				9D3C79692B2B2DB800740074 /* LanguageManager.swift in Sources */,
 				9D74C68D2B21DAA800265520 /* MainOfferModel.swift in Sources */,
 				9DCD88972B260F7A005A779A /* WeatherForLocation.swift in Sources */,
 				9DC381B22B238E3B006CC2E5 /* WeatherOfferModel.swift in Sources */,
@@ -455,10 +463,11 @@
 				DEVELOPMENT_TEAM = B5GYW8VT22;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = WeatherApp_Test/Info.plist;
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location for a specific reason";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -484,10 +493,11 @@
 				DEVELOPMENT_TEAM = B5GYW8VT22;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = WeatherApp_Test/Info.plist;
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location for a specific reason";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

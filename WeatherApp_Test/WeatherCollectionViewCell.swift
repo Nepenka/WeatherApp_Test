@@ -9,9 +9,9 @@ import UIKit
 import SnapKit
 
 class WeatherCollectionViewCell: UICollectionViewCell {
-    
     var timeLabel = UILabel()
     var temperatureLabel = UILabel()
+    
   var weatherIconImageView: UIImageView = {
     let imageView = UIImageView()
     imageView.contentMode = .scaleAspectFill
@@ -78,12 +78,21 @@ class WeatherCollectionViewCell: UICollectionViewCell {
         }
 
         if let temperatureKelvin = listOfferModel.main?.temp {
-                let temperatureCelsius = temperatureKelvin - 273.15
-                let formattedTemperature = String(format: "%.1f", temperatureCelsius)
-                temperatureLabel.text = "\(formattedTemperature) °C"
+            var temperatureValue: Double
+            let temperatureUnit = UserDefaults.standard.string(forKey: "temperatureUnit") ?? "celsius"
+
+            if temperatureUnit == "celsius" {
+                temperatureValue = Double(temperatureKelvin - 273.15)
             } else {
-                temperatureLabel.text = "N/A"
+                temperatureValue = Double((temperatureKelvin - 273.15) * 9/5 + 32)
             }
+            let formattedTemperature = String(format: "%.1f", temperatureValue)
+            let temperatureUnitString = NSLocalizedString("temperature_unit", comment: "Temperature unit")
+            temperatureLabel.text = "\(formattedTemperature) \(temperatureUnitString)"
+        } else {
+            temperatureLabel.text = "N/A"
+        }
+
 
         if let weather = listOfferModel.weather?.first {
             if let icon = weather.icon, let imageName = weatherIconMapping[icon] {

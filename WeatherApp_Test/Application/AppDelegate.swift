@@ -10,12 +10,26 @@ import CoreData
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
-
-    var window: UIWindow?
+    
     
 
+    func setAppLanguage(_ languageCode: String) {
+        UserDefaults.standard.set([languageCode], forKey: "AppleLanguages")
+        UserDefaults.standard.synchronize()
+    }
+
+    func currentAppLanguage() -> String? {
+        return UserDefaults.standard.stringArray(forKey: "AppleLanguages")?.first
+    }
+    
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        
+
+        if let savedLanguage = currentAppLanguage() {
+            LanguageManager.shared.setAppLanguage(savedLanguage)
+        } else {
+            LanguageManager.shared.setAppLanguage(NSLocale.current.languageCode ?? "en")
+        }
+
         return true
     }
 
