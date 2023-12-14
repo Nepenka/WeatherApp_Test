@@ -109,41 +109,24 @@ class ViewController: UIViewController, UISearchResultsUpdating {
             updateTemperatureDisplay()
         }
     
+    
+    //MARK: - Update Temperature Display
     func updateTemperatureDisplay() {
         guard let collectionView = collectionView else {
             return
         }
-
         for cell in collectionView.visibleCells {
             guard let indexPath = collectionView.indexPath(for: cell),
                   let listOfferModel = offerModel?.list?[indexPath.item] else {
                 continue
             }
-
-            if let temperatureKelvin = listOfferModel.main?.temp {
-                var temperatureValue: Double
-                let temperatureUnit = UserDefaults.standard.string(forKey: "temperatureUnit") ?? "celsius"
-
-                if temperatureUnit == "celsius" {
-                    temperatureValue = Double(temperatureKelvin - 273.15)
-                } else {
-                    temperatureValue = Double((temperatureKelvin - 273.15) * 9/5 + 32)
-                }
-
-                let temperatureUnitString = (temperatureUnit == "celsius") ? "°C" : "°F"
-                let formattedTemperature = String(format: "%.1f", temperatureValue)
-                if let weatherCell = cell as? WeatherCollectionViewCell {
-                    weatherCell.temperatureLabel.text = "\(formattedTemperature) \(temperatureUnitString)"
-                }
-            } else {
-                if let weatherCell = cell as? WeatherCollectionViewCell {
-                    weatherCell.temperatureLabel.text = "N/A"
-                }
-            }
+            
+            updateCellTemperature(cell, with: listOfferModel)
         }
 
         tableView.reloadData()
     }
+    
 
     //MARK: - Navigation Bar
     fileprivate func setupNavigationBar() {
@@ -297,13 +280,13 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource, 
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-      guard  let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: WeatherCollectionViewCell.self), for: indexPath) as? WeatherCollectionViewCell else {
-        return collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: UICollectionViewCell.self), for: indexPath)
-      }
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: WeatherCollectionViewCell.self), for: indexPath) as? WeatherCollectionViewCell else {
+            return collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: UICollectionViewCell.self), for: indexPath)
+        }
 
         if let listOfferModel = offerModel?.list?[indexPath.item] {
-        
             cell.configure(with: listOfferModel)
+            updateCellTemperature(cell, with: listOfferModel)
         }
 
         return cell
