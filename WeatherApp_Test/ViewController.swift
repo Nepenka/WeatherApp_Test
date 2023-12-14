@@ -24,8 +24,11 @@ class ViewController: UIViewController, UISearchResultsUpdating {
         super.viewDidLoad()
         view.backgroundColor = UIColor(red: 224/255, green: 255/255, blue: 255/255, alpha: 1)
         let navigationController = UINavigationController(rootViewController: self)
-        UIApplication.shared.windows.first?.rootViewController = navigationController
-        UIApplication.shared.windows.first?.makeKeyAndVisible()
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let window = windowScene.windows.first {
+            window.rootViewController = navigationController
+            window.makeKeyAndVisible()
+        }
         setupNavigationBar()
         setupCollectionView()
         setupTableView()
@@ -33,10 +36,10 @@ class ViewController: UIViewController, UISearchResultsUpdating {
         
     }
     
-
     
     
-//MARK: - Location Manager
+    
+    //MARK: - Location Manager
     
     func setupLocationManager() {
         locationManager.delegate = self
@@ -45,7 +48,7 @@ class ViewController: UIViewController, UISearchResultsUpdating {
     }
     
     
-//MARK: - UICollectionView
+    //MARK: - UICollectionView
     
     func setupCollectionView() {
         let layout = UICollectionViewFlowLayout()
@@ -57,8 +60,8 @@ class ViewController: UIViewController, UISearchResultsUpdating {
         collectionView.dataSource = self
         
         collectionView.register(WeatherCollectionViewCell.self, forCellWithReuseIdentifier: String(describing: WeatherCollectionViewCell.self))
-      collectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: String(describing: UICollectionViewCell.self))
-
+        collectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: String(describing: UICollectionViewCell.self))
+        
         collectionView.snp.makeConstraints { make in
             make.right.left.equalToSuperview().inset(5)
             make.top.equalToSuperview().inset(350)
@@ -66,7 +69,7 @@ class ViewController: UIViewController, UISearchResultsUpdating {
         }
     }
     
-//MARK: - UITableView
+    //MARK: - UITableView
     
     func setupTableView() {
         view.addSubview(tableView)
@@ -84,98 +87,88 @@ class ViewController: UIViewController, UISearchResultsUpdating {
     }
     
     //MARK: - Navigation Bar
-       fileprivate func setupNavigationBar() {
-           self.navigationItem.title = "WeatherWise"
-           self.navigationController?.navigationBar.prefersLargeTitles = true
-           
-           let searchController = UISearchController(searchResultsController: nil)
-           searchController.searchResultsUpdater = self
-           navigationItem.searchController = searchController
-           navigationItem.hidesSearchBarWhenScrolling = false
-       }
+    fileprivate func setupNavigationBar() {
+        self.navigationItem.title = "WeatherWise"
+        self.navigationController?.navigationBar.prefersLargeTitles = true
+        
+        let searchController = UISearchController(searchResultsController: nil)
+        searchController.searchResultsUpdater = self
+        navigationItem.searchController = searchController
+        navigationItem.hidesSearchBarWhenScrolling = false
+    }
     
     //MARK: - Core Data (SaveData)
     func saveWeatherDataToCoreData() {
-            guard let list = self.offerModel?.list else {
-                return
-            }
-           
-            let weatherDataManager = WeatherDataManager()
-
-            for listOfferModel in list {
-                if let temp = listOfferModel.main?.temp,
-                   let dt_txt = listOfferModel.dt_txt,
-                   let weatherDescription = listOfferModel.weather?.first?.description {
-                    weatherDataManager.saveWeatherData(temp: temp, dt_txt: dt_txt, weatherDescription: weatherDescription)
-                }
+        guard let list = self.offerModel?.list else {
+            return
+        }
+        
+        let weatherDataManager = WeatherDataManager()
+        
+        for listOfferModel in list {
+            if let temp = listOfferModel.main?.temp,
+               let dt_txt = listOfferModel.dt_txt,
+               let weatherDescription = listOfferModel.weather?.first?.description {
+                weatherDataManager.saveWeatherData(temp: temp, dt_txt: dt_txt, weatherDescription: weatherDescription)
             }
         }
-
+    }
+    
     //MARK: - FetchWeatherData
     func fetchWeatherDataFromCoreData() {
-            let weatherDataManager = WeatherDataManager()
-            let weatherData = weatherDataManager.fetchWeatherData()
-            
-
+        let weatherDataManager = WeatherDataManager()
+        let _ = weatherDataManager.fetchWeatherData()
+        
+        
         DispatchQueue.main.async {
             self.collectionView.reloadData()
             self.tableView.reloadData()
         }
     }
-       
-       
-       // MARK: - UISearchResultsUpdating
-    func updateSearchResults(for searchController: UISearchController) {
-        guard let city = searchController.searchBar.text, !city.isEmpty else {
-            return
-        }
     
-        timer.invalidate()
-        
-        timer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false) { [weak self] _ in
-            guard let self = self else { return }
-            
-            if isConnectedToNetwork() {
-                
-                self.saveWeatherDataToCoreData()
-            } else {
-                
-                self.fetchWeatherDataFromCoreData()
-                showNoInternetConnectionAlert(in: self)
+    
+    // MARK: - UISearchResultsUpdating
+    func updateSearchResults(for searchController: UISearchController) {
+            guard let city = searchController.searchBar.text, !city.isEmpty else {
+                return
             }
-            
-            NetworkManager.shared.getWeather(city: city) { (model, error) in
-                if let error = error {
-                    print("Error fetching weather data: \(error)")
-                    return
-                }
-                
-                guard let list = model?.list, !list.isEmpty else {
-                    print("No weather data received")
-                    return
-                }
-                
-                if list.isEmpty {
-                    print("The list is empty.")
+
+            timer.invalidate()
+
+            timer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false) { [weak self] _ in
+                guard let self = self else { return }
+
+                if isConnectedToNetwork() {
+                    // Fetch weather data from the internet
+                    NetworkManager.shared.getWeather(city: city) { (model, error) in
+                        if let error = error {
+                            print("Error fetching weather data: \(error)")
+                            self.fetchWeatherDataFromCoreData()
+                            return
+                        }
+
+                        guard let list = model?.list, !list.isEmpty else {
+                            print("No weather data received")
+                            self.fetchWeatherDataFromCoreData()
+                            return
+                        }
+
+                        self.saveWeatherDataToCoreData()
+
+                        DispatchQueue.main.async {
+                            self.offerModel = model
+                            self.weatherOfferModel = model?.list?.first?.weather?.first
+                            self.collectionView.reloadData()
+                            self.tableView.reloadData()
+                        }
+                    }
                 } else {
-                    print("Unexpected situation: The list is not empty, but the first item is nil.")
-                    print("List content: \(list)")
-                }
-                
-                
-                self.saveWeatherDataToCoreData()
-                
-                
-                DispatchQueue.main.async {
-                    self.offerModel = model
-                    self.weatherOfferModel = model?.list?.first?.weather?.first
-                    self.collectionView.reloadData()
-                    self.tableView.reloadData()
+                    
+                    self.fetchWeatherDataFromCoreData()
                 }
             }
         }
     }
-}
 
 // MARK: - Reverse Geocoding
 
